@@ -28,11 +28,12 @@ union StringType {
 
 class RealSRWrapped : public RealSR {
 public:
-    RealSRWrapped(int gpuid, bool tta_mode = false);
+    RealSRWrapped(int gpuid, bool tta_mode = false, bool debug = false);
     int load(const StringType &parampath, const StringType &modelpath);
     int process(const Image &inimage, Image outimage);
+    bool debug;
 };
 
 int get_gpu_count();
-int get_heap_budget(int gpuid);
+uint32_t get_heap_budget(int gpuid);
 #endif //REALSR_NCNN_VULKAN_REALSR_WRAPPED_H

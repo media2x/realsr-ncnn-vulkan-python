@@ -7,7 +7,8 @@ realsr-ncnn-vulkan-python wraps [realsr-ncnn-vulkan project](https://github.com/
 
 ## Downloads
 
-Will be released soon.
+Linux/Windos/Mac X86_64 build releases are available now. However, for Linux you may need to compile it yourself if you
+are using python version other than 3.8 . (The compiled python C extension library is bound to python version now)
 
 ## Build
 
@@ -18,8 +19,7 @@ First, you have to install python, python development package (Python native dev
 git clone https://github.com/ArchieMeng/realsr-ncnn-vulkan-python.git
 cd realsr-ncnn-vulkan-python
 git submodule update --init --recursive
-cd src
-cmake -B build .
+cmake -B build src
 cd build
 make
 ```

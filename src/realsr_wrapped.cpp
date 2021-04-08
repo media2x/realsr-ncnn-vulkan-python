@@ -3,7 +3,7 @@
 //
 #include "realsr_wrapped.h"
 
-RealSRWrapped::RealSRWrapped(int gpuid, bool tta_mode) : RealSR(gpuid, tta_mode) {}
+RealSRWrapped::RealSRWrapped(int gpuid, bool tta_mode, bool debug) : RealSR(gpuid, tta_mode), debug(debug) {}
 
 int RealSRWrapped::load(const StringType &parampath, const StringType &modelpath) {
 #if _WIN32
@@ -17,10 +17,10 @@ int RealSRWrapped::process(const Image &inimage, Image outimage) {
     int c = inimage.elempack;
     ncnn::Mat inimagemat = ncnn::Mat(inimage.w, inimage.h, (void*) inimage.data, (size_t) c, c);
     ncnn::Mat outimagemat = ncnn::Mat(outimage.w, outimage.h, (void*) outimage.data, (size_t) c, c);
-    return RealSR::process(inimagemat, outimagemat);
+    return RealSR::process(inimagemat, outimagemat, this->debug);
 };
 
-int get_heap_budget(int gpuid) {
+uint32_t get_heap_budget(int gpuid) {
     return ncnn::get_gpu_device(gpuid)->get_heap_budget();
 }
 

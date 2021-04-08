@@ -22,7 +22,7 @@ public:
     int load(const std::string& parampath, const std::string& modelpath);
 #endif
 
-    int process(const ncnn::Mat& inimage, ncnn::Mat& outimage) const;
+    int process(const ncnn::Mat& inimage, ncnn::Mat& outimage, bool debug = true) const;
 
 public:
     // realsr parameters

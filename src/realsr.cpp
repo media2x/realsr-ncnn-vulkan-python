@@ -172,7 +172,7 @@ int RealSR::load(const std::string& parampath, const std::string& modelpath)
     return 0;
 }
 
-int RealSR::process(const ncnn::Mat& inimage, ncnn::Mat& outimage) const
+int RealSR::process(const ncnn::Mat& inimage, ncnn::Mat& outimage, bool debug) const
 {
     const unsigned char* pixeldata = (const unsigned char*)inimage.data;
     const int w = inimage.w;
@@ -501,8 +501,8 @@ int RealSR::process(const ncnn::Mat& inimage, ncnn::Mat& outimage) const
                 cmd.submit_and_wait();
                 cmd.reset();
             }
-
-            fprintf(stderr, "%.2f%%\n", (float)(yi * xtiles + xi) / (ytiles * xtiles) * 100);
+            if (debug)
+                fprintf(stderr, "%.2f%%\n", (float)(yi * xtiles + xi) / (ytiles * xtiles) * 100);
         }
 
         // download

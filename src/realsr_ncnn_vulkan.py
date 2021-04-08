@@ -20,6 +20,7 @@ class RealSR:
             tta_mode=False,
             scale: float = 4,
             tilesize=0,
+            debug=False,
     ):
         """
         RealSR class which can do image super resolution.
@@ -29,8 +30,9 @@ class RealSR:
         :param tta_mode: whether to enable tta mode or not
         :param scale: scale ratio. value: float. default: 2
         :param tilesize: tile size. 0 for automatically setting the size. default: 0
+        :param debug: enable debug output (mainly the realsr progress output). default: False
         """
-        self._raw_realsr = raw.RealSRWrapped(gpuid, tta_mode)
+        self._raw_realsr = raw.RealSRWrapped(gpuid, tta_mode, debug)
         self.model = model
         self.gpuid = gpuid
         self.scale = scale  # the real scale ratio
@@ -46,10 +48,7 @@ class RealSR:
         :return: None
         """
         self._raw_realsr.scale = 4  # control the real scale ratio at each raw process function call
-        if tilesize == 0:
-            self._raw_realsr.tilesize = self.get_tilesize()
-        else:
-            self._raw_realsr.tilesize = tilesize
+        self._raw_realsr.tilesize = self.get_tilesize() if tilesize <= 0 else tilesize
         self._raw_realsr.prepadding = self.get_prepadding()
 
     def load(self, parampath: str = "", modelpath: str = "") -> None:
@@ -160,7 +159,7 @@ if __name__ == "__main__":
     from time import time
 
     t = time()
-    im = Image.open("../../images/0.png")
+    im = Image.open("../images/0.png")
     upscaler = RealSR(0, scale=4)
     out_im = upscaler.process(im)
     out_im.save("temp.png")

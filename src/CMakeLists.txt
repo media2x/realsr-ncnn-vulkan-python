@@ -279,7 +279,7 @@ add_custom_target(generate-spirv DEPENDS ${SHADER_SPV_HEX_FILES})
 #add_executable(realsr-ncnn-vulkan main.cpp realsr.cpp)
 #
 #add_dependencies(realsr-ncnn-vulkan generate-spirv)
-
+#
 #set(REALSR_LINK_LIBRARIES ncnn webp ${Vulkan_LIBRARY})
 set(REALSR_LINK_LIBRARIES ncnn ${Vulkan_LIBRARY})
 
@@ -309,7 +309,7 @@ if(OPENMP_FOUND)
     list(APPEND REALSR_LINK_LIBRARIES ${OpenMP_CXX_LIBRARIES})
 endif()
 
-# original realsr build targets
+## original realsr build targets
 #target_link_libraries(realsr-ncnn-vulkan ${REALSR_LINK_LIBRARIES})
 
 # Swig build
