@@ -160,7 +160,7 @@ if __name__ == "__main__":
 
     t = time()
     im = Image.open("../images/0.png")
-    upscaler = RealSR(0, scale=4)
+    upscaler = RealSR(0)
     out_im = upscaler.process(im)
     out_im.save("temp.png")
     print(f"Elapsed time: {time() - t}s")
