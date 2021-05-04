@@ -7,8 +7,9 @@ realsr-ncnn-vulkan-python wraps [realsr-ncnn-vulkan project](https://github.com/
 
 ## Downloads
 
-Linux/Windos/Mac X86_64 build releases are available now. However, for Linux you may need to compile it yourself if you
-are using python version other than 3.8 . (The compiled python C extension library is bound to python version now)
+Linux/Windos/Mac X86_64 build releases are available now.
+
+However, for Linux distro with GLIBC < 2.29 (like Ubuntu 18.04), the ubuntu-1804 pre-built should be used.
 
 ## Build
 

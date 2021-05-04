@@ -1,12 +1,18 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.9)
 cmake_policy(SET CMP0091 NEW)
 set(CMAKE_POLICY_DEFAULT_CMP0091 NEW)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 project(realsr-ncnn-vulkan-python)
 
+# Python
+if (${CMAKE_VERSION} VERSION_LESS "3.15")
+    find_package(Python REQUIRED)
+else()
+    find_package(Python REQUIRED COMPONENTS Development)
+endif()
+
 # SWIG
-find_package(Python REQUIRED COMPONENTS Development)
 find_package(SWIG REQUIRED COMPONENTS python)
 if(SWIG_FOUND)
     message("SWIG found: ${SWIG_EXECUTABLE}")
@@ -316,4 +322,9 @@ set_property(SOURCE realsr.i PROPERTY CPLUSPLUS ON DEPENDS generate-spirv)
 swig_add_library(realsr_ncnn_vulkan_wrapper LANGUAGE python SOURCES realsr.i realsr.cpp realsr_wrapped.cpp)
 add_dependencies(realsr_ncnn_vulkan_wrapper generate-spirv)
 target_compile_options(realsr_ncnn_vulkan_wrapper PUBLIC -fexceptions)
-target_link_libraries(realsr_ncnn_vulkan_wrapper ${REALSR_LINK_LIBRARIES} Python::Module)
+if (${CMAKE_VERSION} VERSION_LESS "3.15")
+    include_directories(${PYTHON_INCLUDE_DIRS})
+    target_link_libraries(realsr_ncnn_vulkan_wrapper ${REALSR_LINK_LIBRARIES} ${PYTHON_LIBRARIES})
+else()
+    target_link_libraries(realsr_ncnn_vulkan_wrapper ${REALSR_LINK_LIBRARIES} Python::Module)
+endif()
