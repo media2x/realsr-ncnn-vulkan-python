@@ -20,7 +20,6 @@ class RealSR:
             tta_mode=False,
             scale: float = 4,
             tilesize=0,
-            debug=False,
     ):
         """
         RealSR class which can do image super resolution.
@@ -30,9 +29,8 @@ class RealSR:
         :param tta_mode: whether to enable tta mode or not
         :param scale: scale ratio. value: float. default: 2
         :param tilesize: tile size. 0 for automatically setting the size. default: 0
-        :param debug: enable debug output (mainly the realsr progress output). default: False
         """
-        self._raw_realsr = raw.RealSRWrapped(gpuid, tta_mode, debug)
+        self._raw_realsr = raw.RealSRWrapped(gpuid, tta_mode)
         self.model = model
         self.gpuid = gpuid
         self.scale = scale  # the real scale ratio
