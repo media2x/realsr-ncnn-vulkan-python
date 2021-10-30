@@ -68,24 +68,6 @@ If you encounter crash or error, try to upgrade your GPU driver
 - AMD: https://www.amd.com/en/support
 - NVIDIA: https://www.nvidia.com/Download/index.aspx
 
-## Sample Images
-
-### Original Image
-
-![origin](images/0.png)
-
-### Upscale 4x with ImageMagick Lanczo4 Filter
-
-![browser](images/im.png)
-
-### Upscale 4x with srmd scale=4 noise=-1
-
-![waifu2x](images/srmd.png)
-
-### Upscale 4x with realsr model=DF2K scale=4 tta=1
-
-![realsr](images/2.png)
-
 ## Original RealSR NCNN Vulkan Project
 
 - https://github.com/nihui/realsr-ncnn-vulkan
