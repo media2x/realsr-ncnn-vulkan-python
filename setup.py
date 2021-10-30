@@ -6,7 +6,9 @@ import setuptools
 import sys
 
 # HACK: allows pip to load user site packages when running setup
-os.environ.pop("PYTHONNOUSERSITE")
+if "PYTHONNOUSERSITE" in os.environ:
+    os.environ.pop("PYTHONNOUSERSITE")
+
 sys.path.append(
     str(
         pathlib.Path.home()
@@ -28,7 +30,7 @@ setuptools.setup(
         cmake_build_extension.CMakeExtension(
             name="realsr-ncnn-vulkan-python",
             install_prefix="realsr_ncnn_vulkan_python",
-            write_top_level_init="from .realsr_ncnn_vulkan import Waifu2x",
+            write_top_level_init="from .realsr_ncnn_vulkan import RealSR",
             source_dir=str(pathlib.Path(__file__).parent / "realsr_ncnn_vulkan_python"),
             cmake_configure_options=[
                 "-DBUILD_SHARED_LIBS:BOOL=OFF",
