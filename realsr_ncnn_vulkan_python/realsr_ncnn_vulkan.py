@@ -12,14 +12,15 @@ else:
     import realsr_ncnn_vulkan_wrapper as raw
 
 
-class RealSR:
+class Realsr:
     def __init__(
-            self,
-            gpuid=0,
-            model="models-DF2K",
-            tta_mode=False,
-            scale: float = 4,
-            tilesize=0,
+        self,
+        gpuid=0,
+        model="models-DF2K",
+        tta_mode=False,
+        scale: float = 4,
+        tilesize=0,
+        **_kwargs,
     ):
         """
         RealSR class which can do image super resolution.
@@ -37,7 +38,7 @@ class RealSR:
         self.set_params(scale, tilesize)
         self.load()
 
-    def set_params(self, scale=4., tilesize=0):
+    def set_params(self, scale=4.0, tilesize=0):
         """
         set parameters for realsr object
 
@@ -45,7 +46,9 @@ class RealSR:
         :param tilesize: default: 0
         :return: None
         """
-        self._raw_realsr.scale = 4  # control the real scale ratio at each raw process function call
+        self._raw_realsr.scale = (
+            4  # control the real scale ratio at each raw process function call
+        )
         self._raw_realsr.tilesize = self.get_tilesize() if tilesize <= 0 else tilesize
         self._raw_realsr.prepadding = self.get_prepadding()
 
@@ -61,7 +64,7 @@ class RealSR:
             model_dir = Path(self.model)
             if not model_dir.is_absolute():
                 if (
-                        not model_dir.is_dir()
+                    not model_dir.is_dir()
                 ):  # try to load it from module path if not exists as directory
                     dir_path = Path(__file__).parent
                     model_dir = dir_path.joinpath("models", self.model)
@@ -122,7 +125,7 @@ class RealSR:
             self._raw_realsr.scale * im.width,
             self._raw_realsr.scale * im.height,
             channels,
-            )
+        )
 
         self._raw_realsr.process(raw_in_image, raw_out_image)
 

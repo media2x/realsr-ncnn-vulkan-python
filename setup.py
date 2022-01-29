@@ -1,36 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import os
+import cmake_build_extension
 import pathlib
 import setuptools
-import sys
-
-# HACK: allows pip to load user site packages when running setup
-if "PYTHONNOUSERSITE" in os.environ:
-    os.environ.pop("PYTHONNOUSERSITE")
-
-sys.path.append(
-    str(
-        pathlib.Path.home()
-        / ".local/lib/python{}.{}/site-packages".format(
-            sys.version_info.major, sys.version_info.minor
-        )
-    )
-)
-sys.path.append(
-    "/usr/lib/python{}.{}/site-packages".format(
-        sys.version_info.major, sys.version_info.minor
-    )
-)
-
-import cmake_build_extension
 
 setuptools.setup(
     ext_modules=[
         cmake_build_extension.CMakeExtension(
             name="realsr-ncnn-vulkan-python",
             install_prefix="realsr_ncnn_vulkan_python",
-            write_top_level_init="from .realsr_ncnn_vulkan import RealSR",
+            write_top_level_init="from .realsr_ncnn_vulkan import Realsr",
             source_dir=str(pathlib.Path(__file__).parent / "realsr_ncnn_vulkan_python"),
             cmake_configure_options=[
                 "-DBUILD_SHARED_LIBS:BOOL=OFF",
