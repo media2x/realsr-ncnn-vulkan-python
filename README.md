@@ -55,6 +55,8 @@ https://arxiv.org/abs/2005.01996
 ```Python
 from PIL import Image
 from realsr_ncnn_vulkan import RealSR
+# if installed from pypi or binary wheels,
+# from realsr_ncnn_vulkan_python import RealSR
 
 im = Image.open("0.png")
 upscaler = RealSR(0, scale=4)
