@@ -12,7 +12,7 @@ else:
     import realsr_ncnn_vulkan_wrapper as raw
 
 
-class Realsr:
+class RealSR:
     def __init__(
         self,
         gpuid=0,

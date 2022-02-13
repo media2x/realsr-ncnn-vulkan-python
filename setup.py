@@ -19,7 +19,7 @@ setuptools.setup(
         cmake_build_extension.CMakeExtension(
             name="realsr-ncnn-vulkan-python",
             install_prefix="realsr_ncnn_vulkan_python",
-            write_top_level_init="from .realsr_ncnn_vulkan import Realsr",
+            write_top_level_init="from .realsr_ncnn_vulkan import RealSR",
             source_dir=str(pathlib.Path(__file__).parent / "realsr_ncnn_vulkan_python"),
             cmake_configure_options=cmake_flags,
         )
