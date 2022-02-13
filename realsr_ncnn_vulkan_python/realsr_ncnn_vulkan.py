@@ -12,7 +12,7 @@ else:
     import realsr_ncnn_vulkan_wrapper as raw
 
 
-class RealSR:
+class Realsr:
     def __init__(
         self,
         gpuid=0,
@@ -154,6 +154,10 @@ class RealSR:
                 return 32
         else:
             raise NotImplementedError(f'model "{self.model}" is not supported')
+
+
+class RealSR(Realsr):
+    ...
 
 
 if __name__ == "__main__":
