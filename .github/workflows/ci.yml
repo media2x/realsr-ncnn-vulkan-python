@@ -6,36 +6,32 @@ on:
   pull_request: {}
   workflow_dispatch: {}
 jobs:
-  windows:
-    runs-on: windows-latest
+  build:
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest, ubuntu-1804 ]
+        python-version: [ '3.6', '3.7', '3.8', '3.9', '3.10']
+        exclude:
+          - os: ubuntu-latest
+            python-version: [ '3.6', '3.7', '3.8', '3.9' ]
+
+
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
       - name: Install Vulkan SDK
         uses: humbletim/setup-vulkan-sdk@v1.0.3
+        with:
+          vulkan-components: headers, loader, glslang
+          vulkan-use-cache: true
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.8"
+          python-version: ${{ matrix.python-version }}
           architecture: x64
       - name: Install dependencies
         run: |
-          pip install build
-      - name: Build
-        run: |
-          python -m build -w .
-  ubuntu:
-    runs-on: ubuntu-latest
-    env:
-      DEBIAN_FRONTEND: noninteractive
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-pip python3-venv libvulkan-dev swig glslang-dev glslang-tools
           pip install build
       - name: Build
         run: |
