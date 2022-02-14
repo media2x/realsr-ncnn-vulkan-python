@@ -384,6 +384,8 @@ if(CALL_FROM_SETUP_PY)
   install(DIRECTORY realsr-ncnn-vulkan/models
           DESTINATION ${CMAKE_INSTALL_PREFIX})
   install(FILES realsr_ncnn_vulkan.py DESTINATION ${CMAKE_INSTALL_PREFIX})
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../README.md DESTINATION ${CMAKE_INSTALL_PREFIX})
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE DESTINATION ${CMAKE_INSTALL_PREFIX})
 else()
   file(COPY realsr-ncnn-vulkan/models
        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/realsr_ncnn_vulkan_python)
