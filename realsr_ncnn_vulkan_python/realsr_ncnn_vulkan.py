@@ -1,15 +1,29 @@
-import sys
-from math import floor
-from pathlib import Path
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Name: RealSR ncnn Vulkan Python wrapper
+Author: ArchieMeng
+Date Created: February 4, 2021
+Last Modified: February 13, 2022
 
+Dev: K4YT3X
+Last Modified: February 13, 2022
+"""
+
+# built-in imports
+import importlib
+import math
+import pathlib
+import sys
+
+# third-party imports
 from PIL import Image
 
-if __package__:
-    import importlib
-
-    raw = importlib.import_module(f"{__package__}.realsr_ncnn_vulkan_wrapper")
+# local imports
+if __package__ is None:
+    import realsr_ncnn_vulkan_wrapper as wrapped
 else:
-    import realsr_ncnn_vulkan_wrapper as raw
+    wrapped = importlib.import_module(f"{__package__}.realsr_ncnn_vulkan_wrapper")
 
 
 class Realsr:
@@ -31,7 +45,7 @@ class Realsr:
         :param scale: scale ratio. value: float. default: 2
         :param tilesize: tile size. 0 for automatically setting the size. default: 0
         """
-        self._raw_realsr = raw.RealSRWrapped(gpuid, tta_mode)
+        self._raw_realsr = wrapped.RealSRWrapped(gpuid, tta_mode)
         self.model = model
         self.gpuid = gpuid
         self.scale = scale  # the real scale ratio
@@ -52,7 +66,9 @@ class Realsr:
         self._raw_realsr.tilesize = self.get_tilesize() if tilesize <= 0 else tilesize
         self._raw_realsr.prepadding = self.get_prepadding()
 
-    def load(self, parampath: str = "", modelpath: str = "") -> None:
+    def load(
+        self, param_path: pathlib.Path = None, model_path: pathlib.Path = None
+    ) -> None:
         """
         Load models from given paths. Use self.model if one or all of the parameters are not given.
 
@@ -60,35 +76,32 @@ class Realsr:
         :param modelpath: the path to model bin. usually ended with ".bin"
         :return: None
         """
-        if not parampath or not modelpath:
-            model_dir = Path(self.model)
-            if not model_dir.is_absolute():
-                if (
-                    not model_dir.is_dir()
-                ):  # try to load it from module path if not exists as directory
-                    dir_path = Path(__file__).parent
-                    model_dir = dir_path.joinpath("models", self.model)
+        if param_path is None or model_path is None:
+            model_dir = pathlib.Path(self.model)
 
-            if self._raw_realsr.scale == 4:
-                parampath = model_dir.joinpath("x4.param")
-                modelpath = model_dir.joinpath("x4.bin")
+            # try to load it from module path if not exists as directory
+            if not model_dir.is_dir():
+                model_dir = pathlib.Path(__file__).parent / "models" / self.model
 
-        if Path(parampath).exists() and Path(modelpath).exists():
-            parampath_str, modelpath_str = raw.StringType(), raw.StringType()
+            param_path = model_dir / f"x{self._raw_realsr.scale}.param"
+            model_path = model_dir / f"x{self._raw_realsr.scale}.bin"
+
+        if param_path.exists() and model_path.exists():
+            param_path_str, model_path_str = wrapped.StringType(), wrapped.StringType()
             if sys.platform in ("win32", "cygwin"):
-                parampath_str.wstr = raw.new_wstr_p()
-                raw.wstr_p_assign(parampath_str.wstr, str(parampath))
-                modelpath_str.wstr = raw.new_wstr_p()
-                raw.wstr_p_assign(modelpath_str.wstr, str(modelpath))
+                param_path_str.wstr = wrapped.new_wstr_p()
+                wrapped.wstr_p_assign(param_path_str.wstr, str(param_path))
+                model_path_str.wstr = wrapped.new_wstr_p()
+                wrapped.wstr_p_assign(model_path_str.wstr, str(model_path))
             else:
-                parampath_str.str = raw.new_str_p()
-                raw.str_p_assign(parampath_str.str, str(parampath))
-                modelpath_str.str = raw.new_str_p()
-                raw.str_p_assign(modelpath_str.str, str(modelpath))
+                param_path_str.str = wrapped.new_str_p()
+                wrapped.str_p_assign(param_path_str.str, str(param_path))
+                model_path_str.str = wrapped.new_str_p()
+                wrapped.str_p_assign(model_path_str.str, str(model_path))
 
-            self._raw_realsr.load(parampath_str, modelpath_str)
+            self._raw_realsr.load(param_path_str, model_path_str)
         else:
-            raise FileNotFoundError(f"{parampath} or {modelpath} not found")
+            raise FileNotFoundError(f"{param_path} or {model_path} not found")
 
     def process(self, im: Image) -> Image:
         """
@@ -103,7 +116,7 @@ class Realsr:
             while cur_scale < self.scale:
                 im = self._process(im)
                 cur_scale *= 4
-            w, h = floor(w * self.scale), floor(h * self.scale)
+            w, h = math.floor(w * self.scale), math.floor(h * self.scale)
             im = im.resize((w, h))
 
         return im
@@ -119,8 +132,8 @@ class Realsr:
         channels = int(len(in_bytes) / (im.width * im.height))
         out_bytes = bytearray((self._raw_realsr.scale ** 2) * len(in_bytes))
 
-        raw_in_image = raw.Image(in_bytes, im.width, im.height, channels)
-        raw_out_image = raw.Image(
+        raw_in_image = wrapped.Image(in_bytes, im.width, im.height, channels)
+        raw_out_image = wrapped.Image(
             out_bytes,
             self._raw_realsr.scale * im.width,
             self._raw_realsr.scale * im.height,
@@ -142,7 +155,7 @@ class Realsr:
             raise NotImplementedError(f'model "{self.model}" is not supported')
 
     def get_tilesize(self):
-        heap_budget = raw.get_heap_budget(self.gpuid)
+        heap_budget = wrapped.get_heap_budget(self.gpuid)
         if self.model.find("models-DF2K") or self.model.find("models-DF2K_JPEG"):
             if heap_budget > 1900:
                 return 200
@@ -158,14 +171,3 @@ class Realsr:
 
 class RealSR(Realsr):
     ...
-
-
-if __name__ == "__main__":
-    from time import time
-
-    t = time()
-    im = Image.open("../images/0.png")
-    upscaler = RealSR(0)
-    out_im = upscaler.process(im)
-    out_im.save("temp.png")
-    print(f"Elapsed time: {time() - t}s")
