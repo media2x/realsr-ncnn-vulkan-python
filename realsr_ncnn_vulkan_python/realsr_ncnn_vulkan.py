@@ -34,7 +34,7 @@ class Realsr:
         tta_mode=False,
         scale: float = 4,
         tilesize=0,
-        **_kwargs,
+        num_threads=1,
     ):
         """
         RealSR class which can do image super resolution.
@@ -44,8 +44,9 @@ class Realsr:
         :param tta_mode: whether to enable tta mode or not
         :param scale: scale ratio. value: float. default: 2
         :param tilesize: tile size. 0 for automatically setting the size. default: 0
+        :param num_threads: number of threads. default: 1
         """
-        self._raw_realsr = wrapped.RealSRWrapped(gpuid, tta_mode)
+        self._raw_realsr = wrapped.RealSRWrapped(gpuid, tta_mode, num_threads)
         self.model = model
         self.gpuid = gpuid
         self.scale = scale  # the real scale ratio
@@ -72,8 +73,8 @@ class Realsr:
         """
         Load models from given paths. Use self.model if one or all of the parameters are not given.
 
-        :param parampath: the path to model params. usually ended with ".param"
-        :param modelpath: the path to model bin. usually ended with ".bin"
+        :param param_path: the path to model params. usually ended with ".param"
+        :param model_path: the path to model bin. usually ended with ".bin"
         :return: None
         """
         if param_path is None or model_path is None:
@@ -155,16 +156,19 @@ class Realsr:
             raise NotImplementedError(f'model "{self.model}" is not supported')
 
     def get_tilesize(self):
-        heap_budget = wrapped.get_heap_budget(self.gpuid)
         if self.model.find("models-DF2K") or self.model.find("models-DF2K_JPEG"):
-            if heap_budget > 1900:
-                return 200
-            elif heap_budget > 550:
-                return 100
-            elif heap_budget > 190:
-                return 64
+            if self.gpuid >= 0:
+                heap_budget = wrapped.get_heap_budget(self.gpuid)
+                if heap_budget > 1900:
+                    return 200
+                elif heap_budget > 550:
+                    return 100
+                elif heap_budget > 190:
+                    return 64
+                else:
+                    return 32
             else:
-                return 32
+                return 200
         else:
             raise NotImplementedError(f'model "{self.model}" is not supported')
 

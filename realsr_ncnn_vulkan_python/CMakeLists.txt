@@ -30,65 +30,25 @@ find_package(Threads)
 find_package(OpenMP)
 find_package(Vulkan REQUIRED)
 
-find_program(
-  GLSLANGVALIDATOR_EXECUTABLE
-  NAMES glslangValidator
-  PATHS $ENV{VULKAN_SDK}/bin
-  NO_CMAKE_FIND_ROOT_PATH)
-message(STATUS "Found glslangValidator: ${GLSLANGVALIDATOR_EXECUTABLE}")
+macro(realsr_add_shader SHADER_SRC)
+    get_filename_component(
+            SHADER_SRC_NAME_WE
+            ${CMAKE_CURRENT_SOURCE_DIR}/realsr-ncnn-vulkan/src/${SHADER_SRC} NAME_WE)
+    set(SHADER_COMP_HEADER ${CMAKE_CURRENT_BINARY_DIR}/${SHADER_SRC_NAME_WE}.comp.hex.h)
 
-macro(compile_shader SHADER_SRC)
-  set(SHADER_SRC_FULLPATH
-      ${CMAKE_CURRENT_SOURCE_DIR}/realsr-ncnn-vulkan/src/${SHADER_SRC})
+    add_custom_command(
+        OUTPUT ${SHADER_COMP_HEADER}
+        COMMAND ${CMAKE_COMMAND}
+            -DSHADER_SRC=${CMAKE_CURRENT_SOURCE_DIR}/realsr-ncnn-vulkan/src/${SHADER_SRC}
+            -DSHADER_COMP_HEADER=${SHADER_COMP_HEADER}
+            -P "${CMAKE_CURRENT_SOURCE_DIR}/realsr-ncnn-vulkan/src/generate_shader_comp_header.cmake"
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/realsr-ncnn-vulkan/src/${SHADER_SRC}
+        COMMENT "Preprocessing shader source ${SHADER_SRC_NAME_WE}.comp"
+        VERBATIM
+    )
+    set_source_files_properties(${SHADER_COMP_HEADER} PROPERTIES GENERATED TRUE)
 
-  get_filename_component(
-    SHADER_SRC_NAME_WE
-    ${CMAKE_CURRENT_SOURCE_DIR}/realsr-ncnn-vulkan/src/${SHADER_SRC} NAME_WE)
-  set(SHADER_SPV_HEX_FILE
-      ${CMAKE_CURRENT_BINARY_DIR}/${SHADER_SRC_NAME_WE}.spv.hex.h)
-  add_custom_command(
-    OUTPUT ${SHADER_SPV_HEX_FILE}
-    COMMAND ${GLSLANGVALIDATOR_EXECUTABLE} ARGS -V -s -x -o
-            ${SHADER_SPV_HEX_FILE} ${SHADER_SRC_FULLPATH}
-    DEPENDS ${SHADER_SRC_FULLPATH}
-    COMMENT "Building SPIR-V module ${SHADER_SRC_NAME_WE}.spv"
-    VERBATIM)
-  set_source_files_properties(${SHADER_SPV_HEX_FILE} PROPERTIES GENERATED TRUE)
-  list(APPEND SHADER_SPV_HEX_FILES ${SHADER_SPV_HEX_FILE})
-
-  # fp16 storage
-  set(SHADER_fp16s_SRC_NAME_WE "${SHADER_SRC_NAME_WE}_fp16s")
-
-  set(SHADER_fp16s_SPV_HEX_FILE
-      ${CMAKE_CURRENT_BINARY_DIR}/${SHADER_fp16s_SRC_NAME_WE}.spv.hex.h)
-  add_custom_command(
-    OUTPUT ${SHADER_fp16s_SPV_HEX_FILE}
-    COMMAND ${GLSLANGVALIDATOR_EXECUTABLE} ARGS -DNCNN_fp16_storage=1 -V -s -x
-            -o ${SHADER_fp16s_SPV_HEX_FILE} ${SHADER_SRC_FULLPATH}
-    DEPENDS ${SHADER_SRC_FULLPATH}
-    COMMENT "Building SPIR-V module ${SHADER_fp16s_SRC_NAME_WE}.spv"
-    VERBATIM)
-  set_source_files_properties(${SHADER_fp16s_SPV_HEX_FILE} PROPERTIES GENERATED
-                                                                      TRUE)
-  list(APPEND SHADER_SPV_HEX_FILES ${SHADER_fp16s_SPV_HEX_FILE})
-
-  # int8 storage
-  set(SHADER_int8s_SRC_NAME_WE "${SHADER_SRC_NAME_WE}_int8s")
-
-  set(SHADER_int8s_SPV_HEX_FILE
-      ${CMAKE_CURRENT_BINARY_DIR}/${SHADER_int8s_SRC_NAME_WE}.spv.hex.h)
-  add_custom_command(
-    OUTPUT ${SHADER_int8s_SPV_HEX_FILE}
-    COMMAND
-      ${GLSLANGVALIDATOR_EXECUTABLE} ARGS -DNCNN_fp16_storage=1
-      -DNCNN_int8_storage=1 -V -s -x -o ${SHADER_int8s_SPV_HEX_FILE}
-      ${SHADER_SRC_FULLPATH}
-    DEPENDS ${SHADER_SRC_FULLPATH}
-    COMMENT "Building SPIR-V module ${SHADER_int8s_SRC_NAME_WE}.spv"
-    VERBATIM)
-  set_source_files_properties(${SHADER_int8s_SPV_HEX_FILE} PROPERTIES GENERATED
-                                                                      TRUE)
-  list(APPEND SHADER_SPV_HEX_FILES ${SHADER_int8s_SPV_HEX_FILE})
+    list(APPEND SHADER_SPV_HEX_FILES ${SHADER_COMP_HEADER})
 endmacro()
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -96,10 +56,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/realsr-ncnn-vulkan/src)
 include_directories(.)
 
 if(OPENMP_FOUND)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-  set(CMAKE_EXE_LINKER_FLAGS
-      "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
 # enable global link time optimization
@@ -114,28 +73,23 @@ else()
 endif()
 
 if(USE_SYSTEM_NCNN)
-  set(GLSLANG_TARGET_DIR
-      "GLSLANG-NOTFOUND"
-      CACHE PATH "Absolute path to glslangTargets.cmake directory")
-  if(NOT GLSLANG_TARGET_DIR AND NOT DEFINED ENV{GLSLANG_TARGET_DIR})
-    message(
-      WARNING
-        "GLSLANG_TARGET_DIR must be defined! USE_SYSTEM_NCNN will be turned off."
-    )
-    set(USE_SYSTEM_NCNN OFF)
-  else()
-    message(STATUS "Using glslang install located at ${GLSLANG_TARGET_DIR}")
+    set(GLSLANG_TARGET_DIR "GLSLANG-NOTFOUND" CACHE PATH "Absolute path to glslangTargets.cmake directory")
+    if(NOT GLSLANG_TARGET_DIR AND NOT DEFINED ENV{GLSLANG_TARGET_DIR})
+        message(WARNING "GLSLANG_TARGET_DIR must be defined! USE_SYSTEM_NCNN will be turned off.")
+        set(USE_SYSTEM_NCNN OFF)
+    else()
+        message(STATUS "Using glslang install located at ${GLSLANG_TARGET_DIR}")
 
-    find_package(Threads)
+        find_package(Threads)
 
-    include("${GLSLANG_TARGET_DIR}/OSDependentTargets.cmake")
-    include("${GLSLANG_TARGET_DIR}/OGLCompilerTargets.cmake")
-    if(EXISTS "${GLSLANG_TARGET_DIR}/HLSLTargets.cmake")
-      # hlsl support can be optional
-      include("${GLSLANG_TARGET_DIR}/HLSLTargets.cmake")
-    endif()
-    include("${GLSLANG_TARGET_DIR}/glslangTargets.cmake")
-    include("${GLSLANG_TARGET_DIR}/SPIRVTargets.cmake")
+        include("${GLSLANG_TARGET_DIR}/OSDependentTargets.cmake")
+        include("${GLSLANG_TARGET_DIR}/OGLCompilerTargets.cmake")
+        if(EXISTS "${GLSLANG_TARGET_DIR}/HLSLTargets.cmake")
+            # hlsl support can be optional
+            include("${GLSLANG_TARGET_DIR}/HLSLTargets.cmake")
+        endif()
+        include("${GLSLANG_TARGET_DIR}/glslangTargets.cmake")
+        include("${GLSLANG_TARGET_DIR}/SPIRVTargets.cmake")
 
     if(NOT TARGET glslang OR NOT TARGET SPIRV)
       message(
@@ -255,6 +209,20 @@ if(NOT USE_SYSTEM_NCNN)
   option(WITH_LAYER_groupnorm "" OFF)
   option(WITH_LAYER_layernorm "" OFF)
   option(WITH_LAYER_softplus "" OFF)
+  option(WITH_LAYER_gru "" OFF)
+  option(WITH_LAYER_multiheadattention "" OFF)
+  option(WITH_LAYER_gelu "" OFF)
+  option(WITH_LAYER_convolution1d "" OFF)
+  option(WITH_LAYER_pooling1d "" OFF)
+  option(WITH_LAYER_convolutiondepthwise1d "" OFF)
+  option(WITH_LAYER_convolution3d "" OFF)
+  option(WITH_LAYER_convolutiondepthwise3d "" OFF)
+  option(WITH_LAYER_pooling3d "" OFF)
+  option(WITH_LAYER_matmul "" OFF)
+  option(WITH_LAYER_deconvolution1d "" OFF)
+  option(WITH_LAYER_deconvolutiondepthwise1d "" OFF)
+  option(WITH_LAYER_deconvolution3d "" OFF)
+  option(WITH_LAYER_deconvolutiondepthwise3d "" OFF)
 
   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/realsr-ncnn-vulkan/src/ncnn)
 endif()
@@ -283,10 +251,10 @@ endif()
 # look for vulkan compute shader and compile
 set(SHADER_SPV_HEX_FILES)
 
-compile_shader(realsr_preproc.comp)
-compile_shader(realsr_postproc.comp)
-compile_shader(realsr_preproc_tta.comp)
-compile_shader(realsr_postproc_tta.comp)
+realsr_add_shader(realsr_preproc.comp)
+realsr_add_shader(realsr_postproc.comp)
+realsr_add_shader(realsr_preproc_tta.comp)
+realsr_add_shader(realsr_postproc_tta.comp)
 
 add_custom_target(generate-spirv DEPENDS ${SHADER_SPV_HEX_FILES})
 

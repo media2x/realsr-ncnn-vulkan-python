@@ -3,7 +3,7 @@
 //
 #include "realsr_wrapped.h"
 
-RealSRWrapped::RealSRWrapped(int gpuid, bool tta_mode) : RealSR(gpuid, tta_mode) {}
+RealSRWrapped::RealSRWrapped(int gpuid, bool tta_mode, int num_threads) : RealSR(gpuid, tta_mode, num_threads) {}
 
 int RealSRWrapped::load(const StringType &parampath, const StringType &modelpath) {
 #if _WIN32

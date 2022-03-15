@@ -28,7 +28,7 @@ union StringType {
 
 class RealSRWrapped : public RealSR {
 public:
-    RealSRWrapped(int gpuid, bool tta_mode = false);
+    RealSRWrapped(int gpuid, bool tta_mode = false, int num_threads = 1);
     int load(const StringType &parampath, const StringType &modelpath);
     int process(const Image &inimage, Image outimage);
 };
