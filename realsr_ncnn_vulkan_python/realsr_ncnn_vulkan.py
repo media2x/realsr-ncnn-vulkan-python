@@ -7,19 +7,16 @@ Date Created: February 4, 2021
 Last Modified: February 13, 2022
 
 Dev: K4YT3X
-Last Modified: February 13, 2022
+Last Modified: March 18, 2022
 """
 
-# built-in imports
 import importlib
 import math
 import pathlib
 import sys
 
-# third-party imports
 from PIL import Image
 
-# local imports
 if __package__ is None:
     import realsr_ncnn_vulkan_wrapper as wrapped
 else:
@@ -32,9 +29,11 @@ class Realsr:
         gpuid=0,
         model="models-DF2K",
         tta_mode=False,
+        quiet=True,
         scale: float = 4,
         tilesize=0,
         num_threads=1,
+        **_kwargs,
     ):
         """
         RealSR class which can do image super resolution.
@@ -46,7 +45,9 @@ class Realsr:
         :param tilesize: tile size. 0 for automatically setting the size. default: 0
         :param num_threads: number of threads. default: 1
         """
-        self._raw_realsr = wrapped.RealSRWrapped(gpuid, tta_mode, num_threads)
+        self._raw_realsr = wrapped.RealSRWrapped(
+            gpuid, tta_mode, num_threads, quiet=quiet
+        )
         self.model = model
         self.gpuid = gpuid
         self.scale = scale  # the real scale ratio

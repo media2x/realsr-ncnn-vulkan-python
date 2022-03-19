@@ -19,7 +19,7 @@
 class RealSR
 {
     public:
-        RealSR(int gpuid, bool tta_mode = false, int num_threads = 1);
+        RealSR(int gpuid, bool tta_mode = false, int num_threads = 1, bool quiet = false);
         ~RealSR();
 
         // realsr parameters

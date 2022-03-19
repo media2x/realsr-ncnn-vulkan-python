@@ -7,12 +7,13 @@
 #include "realsr.h"
 
 // wrapper class of ncnn::Mat
-typedef struct Image{
+typedef struct Image {
     unsigned char *data;
     int w;
     int h;
     int elempack;
-    Image(unsigned char *d, int w, int h, int channels) {
+    Image(unsigned char *d, int w, int h, int channels)
+    {
         this->data = d;
         this->w = w;
         this->h = h;
@@ -26,13 +27,15 @@ union StringType {
     std::wstring *wstr;
 };
 
-class RealSRWrapped : public RealSR {
-public:
-    RealSRWrapped(int gpuid, bool tta_mode = false, int num_threads = 1);
+class RealSRWrapped : public RealSR
+{
+  public:
+    RealSRWrapped(int gpuid, bool tta_mode = false, int num_threads = 1,
+                  bool quiet = false);
     int load(const StringType &parampath, const StringType &modelpath);
     int process(const Image &inimage, Image outimage);
 };
 
 int get_gpu_count();
 uint32_t get_heap_budget(int gpuid);
-#endif //REALSR_NCNN_VULKAN_REALSR_WRAPPED_H
+#endif // REALSR_NCNN_VULKAN_REALSR_WRAPPED_H
