@@ -35,6 +35,7 @@ class Realsr:
         scale: float = 4,
         tilesize=0,
         num_threads=1,
+        **_kwargs,
     ):
         """
         RealSR class which can do image super resolution.
