@@ -1,9 +1,16 @@
 cmake_minimum_required(VERSION 3.9)
+cmake_policy(SET CMP0078 NEW)
+cmake_policy(SET CMP0086 NEW)
 cmake_policy(SET CMP0091 NEW)
 set(CMAKE_POLICY_DEFAULT_CMP0091 NEW)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 project(realsr-ncnn-vulkan-python)
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE release CACHE STRING "Choose the type of build" FORCE)
+endif()
+
 
 # Python
 if (DEFINED PY_VERSION)
@@ -130,6 +137,8 @@ if(NOT USE_SYSTEM_NCNN)
 
   option(NCNN_INSTALL_SDK "" OFF)
   option(NCNN_PIXEL_ROTATE "" OFF)
+  option(NCNN_PIXEL_AFFINE "" OFF)
+  option(NCNN_PIXEL_DRAWING "" OFF)
   option(NCNN_VULKAN "" ON)
   option(NCNN_VULKAN_ONLINE_SPIRV "" ON)
   option(NCNN_BUILD_BENCHMARK "" OFF)
@@ -137,7 +146,8 @@ if(NOT USE_SYSTEM_NCNN)
   option(NCNN_BUILD_TOOLS "" OFF)
   option(NCNN_BUILD_EXAMPLES "" OFF)
   option(NCNN_DISABLE_RTTI "" ON)
-  option(NCNN_DISABLE_EXCEPTION "" OFF)
+  option(NCNN_DISABLE_EXCEPTION "" ON)
+  option(NCNN_INT8 "" OFF)
 
   option(WITH_LAYER_absval "" OFF)
   option(WITH_LAYER_argmax "" OFF)
@@ -231,6 +241,8 @@ if(NOT USE_SYSTEM_NCNN)
   option(WITH_LAYER_deconvolutiondepthwise1d "" OFF)
   option(WITH_LAYER_deconvolution3d "" OFF)
   option(WITH_LAYER_deconvolutiondepthwise3d "" OFF)
+  option(WITH_LAYER_einsum "" OFF)
+  option(WITH_LAYER_deformableconv2d "" OFF)
 
   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/realsr-ncnn-vulkan/src/ncnn)
 endif()
